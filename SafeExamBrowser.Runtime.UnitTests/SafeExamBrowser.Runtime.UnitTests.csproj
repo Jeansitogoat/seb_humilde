@@ -156,6 +156,9 @@
     <Compile Include="Operations\Session\ClientOperationTests.cs" />
     <Compile Include="Operations\Session\SessionActivationOperationTests.cs" />
     <Compile Include="Operations\Session\SessionInitializationOperationTests.cs" />
+    <Compile Include="Operations\Session\SessionIntegrityOperationTests.cs" />
+    <Compile Include="Operations\Session\SessionOperationSequenceTests.cs" />
+    <Compile Include="Operations\Session\VersionRestrictionOperationTests.cs" />
     <Compile Include="Operations\Session\VirtualMachineOperationTests.cs" />
     <Compile Include="Responsibilities\ClientResponsibilityTests.cs" />
     <Compile Include="Responsibilities\CommunicationResponsibilityTests.cs" />
