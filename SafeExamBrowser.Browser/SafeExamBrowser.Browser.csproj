@@ -120,6 +120,8 @@
     <Compile Include="Integrations\GenericIntegration.cs" />
     <Compile Include="Integrations\Integration.cs" />
     <Compile Include="Integrations\MoodleIntegration.cs" />
+    <Compile Include="Integrations\Strategies\CookieStrategy.cs" />
+    <Compile Include="Integrations\Strategies\ResponseStrategy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Responsibilities\BrowserTask.cs" />
     <Compile Include="Responsibilities\Browser\BrowserResponsibility.cs" />

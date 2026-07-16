@@ -7,10 +7,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using CefSharp;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using SafeExamBrowser.Browser.Integrations.Strategies;
 using SafeExamBrowser.Logging.Contracts;
 
 namespace SafeExamBrowser.Browser.Integrations
@@ -19,19 +21,17 @@ namespace SafeExamBrowser.Browser.Integrations
 	{
 		private readonly ILogger logger;
 
-		public EdxIntegration(ILogger logger)
+		protected override IEnumerable<ResponseStrategy> ResponseStrategies => new ResponseStrategy[]
+		{
+			TrySearchByCookieHeader
+		};
+
+		internal EdxIntegration(ILogger logger)
 		{
 			this.logger = logger;
 		}
 
-		internal override bool TrySearchUserIdentifier(Cookie cookie, out string userIdentifier)
-		{
-			userIdentifier = default;
-
-			return false;
-		}
-
-		internal override bool TrySearchUserIdentifier(IRequest request, IResponse response, out string userIdentifier)
+		private bool TrySearchByCookieHeader(IRequest request, IResponse response, out string userIdentifier)
 		{
 			var cookies = response.Headers.GetValues("Set-Cookie");
 			var userInfo = cookies?.FirstOrDefault(c => c.Contains("edx-user-info"));
@@ -41,7 +41,7 @@ namespace SafeExamBrowser.Browser.Integrations
 			if (TryParseCookie(userInfo, out var id) && HasChanged(id))
 			{
 				userIdentifier = id;
-				logger.Info($"User identifier '{id}' detected by session cookie on response.");
+				logger.Info($"User identifier '{id}' detected by session cookie header of response.");
 			}
 
 			return userIdentifier != default;

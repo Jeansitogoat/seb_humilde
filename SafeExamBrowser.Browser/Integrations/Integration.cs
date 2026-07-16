@@ -6,7 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System.Collections.Generic;
+using System.Linq;
 using CefSharp;
+using SafeExamBrowser.Browser.Integrations.Strategies;
 
 namespace SafeExamBrowser.Browser.Integrations
 {
@@ -14,8 +17,44 @@ namespace SafeExamBrowser.Browser.Integrations
 	{
 		private static string activeUserIdentifier;
 
-		internal abstract bool TrySearchUserIdentifier(Cookie cookie, out string userIdentifier);
-		internal abstract bool TrySearchUserIdentifier(IRequest request, IResponse response, out string userIdentifier);
+		protected virtual IEnumerable<CookieStrategy> CookieStrategies { get; }
+		protected virtual IEnumerable<ResponseStrategy> ResponseStrategies { get; }
+
+		protected Integration()
+		{
+			CookieStrategies = Enumerable.Empty<CookieStrategy>();
+			ResponseStrategies = Enumerable.Empty<ResponseStrategy>();
+		}
+
+		internal bool TrySearchUserIdentifier(Cookie cookie, out string userIdentifier)
+		{
+			userIdentifier = default;
+
+			foreach (var strategy in CookieStrategies)
+			{
+				if (strategy(cookie, out userIdentifier))
+				{
+					break;
+				}
+			}
+
+			return false;
+		}
+
+		internal bool TrySearchUserIdentifier(IRequest request, IResponse response, out string userIdentifier)
+		{
+			userIdentifier = default;
+
+			foreach (var strategy in ResponseStrategies)
+			{
+				if (strategy(request, response, out userIdentifier))
+				{
+					break;
+				}
+			}
+
+			return userIdentifier != default;
+		}
 
 		protected bool HasChanged(string userIdentifier)
 		{

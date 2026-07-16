@@ -6,8 +6,10 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
+using System.Collections.Generic;
 using System.Linq;
 using CefSharp;
+using SafeExamBrowser.Browser.Integrations.Strategies;
 using SafeExamBrowser.Logging.Contracts;
 
 namespace SafeExamBrowser.Browser.Integrations
@@ -16,19 +18,35 @@ namespace SafeExamBrowser.Browser.Integrations
 	{
 		private readonly ILogger logger;
 
-		public GenericIntegration(ILogger logger)
+		internal GenericIntegration(ILogger logger)
 		{
 			this.logger = logger;
 		}
 
-		internal override bool TrySearchUserIdentifier(Cookie cookie, out string userIdentifier)
+		protected override IEnumerable<ResponseStrategy> ResponseStrategies => new ResponseStrategy[]
 		{
+			TrySearchByCookieHeader,
+			TrySearchByCustomHeader
+		};
+
+		private bool TrySearchByCookieHeader(IRequest request, IResponse response, out string userIdentifier)
+		{
+			var cookies = response.Headers.GetValues("Set-Cookie");
+			var cookie = cookies?.FirstOrDefault(i => i.StartsWith("SEB-LMS-USER-ID"));
+			var id = cookie?.Split('=', ';').ElementAtOrDefault(1);
+
 			userIdentifier = default;
 
-			return false;
+			if (HasChanged(id))
+			{
+				userIdentifier = id;
+				logger.Info($"User identifier '{id}' detected by cookie header of response.");
+			}
+
+			return userIdentifier != default;
 		}
 
-		internal override bool TrySearchUserIdentifier(IRequest request, IResponse response, out string userIdentifier)
+		private bool TrySearchByCustomHeader(IRequest request, IResponse response, out string userIdentifier)
 		{
 			var ids = response.Headers.GetValues("X-LMS-USER-ID");
 			var id = ids?.FirstOrDefault();
@@ -38,7 +56,7 @@ namespace SafeExamBrowser.Browser.Integrations
 			if (HasChanged(id))
 			{
 				userIdentifier = id;
-				logger.Info($"User identifier '{id}' detected by header of response.");
+				logger.Info($"User identifier '{id}' detected by custom header of response.");
 			}
 
 			return userIdentifier != default;

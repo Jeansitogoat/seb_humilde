@@ -7,10 +7,12 @@
  */
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
 using CefSharp;
+using SafeExamBrowser.Browser.Integrations.Strategies;
 using SafeExamBrowser.Logging.Contracts;
 using Cookie = CefSharp.Cookie;
 
@@ -24,29 +26,23 @@ namespace SafeExamBrowser.Browser.Integrations
 
 		private readonly ILogger logger;
 
-		public MoodleIntegration(ILogger logger)
+		protected override IEnumerable<CookieStrategy> CookieStrategies => new CookieStrategy[]
+		{
+			TrySearchBySession
+		};
+
+		protected override IEnumerable<ResponseStrategy> ResponseStrategies => new ResponseStrategy[]
+		{
+			TrySearchByLocationHeader,
+			TrySearchByRequests
+		};
+
+		internal MoodleIntegration(ILogger logger)
 		{
 			this.logger = logger;
 		}
 
-		internal override bool TrySearchUserIdentifier(Cookie cookie, out string userIdentifier)
-		{
-			return TrySearchByCookie(cookie, out userIdentifier);
-		}
-
-		internal override bool TrySearchUserIdentifier(IRequest request, IResponse response, out string userIdentifier)
-		{
-			var success = TrySearchByLocation(response, out userIdentifier);
-
-			if (!success)
-			{
-				success = TrySearchByRequests(request, response, out userIdentifier);
-			}
-
-			return success;
-		}
-
-		private bool TrySearchByCookie(Cookie cookie, out string userIdentifier)
+		private bool TrySearchBySession(Cookie cookie, out string userIdentifier)
 		{
 			var id = default(string);
 			var type = default(RequestType);
@@ -65,7 +61,7 @@ namespace SafeExamBrowser.Browser.Integrations
 			return userIdentifier != default;
 		}
 
-		private bool TrySearchByLocation(IResponse response, out string userIdentifier)
+		private bool TrySearchByLocationHeader(IRequest request, IResponse response, out string userIdentifier)
 		{
 			var locations = response.Headers.GetValues("Location");
 			var location = locations?.FirstOrDefault(l => l.Contains("/login/index.php?testsession"));
