@@ -110,7 +110,7 @@ namespace SafeExamBrowser.Applications.UnitTests
 
 			Assert.AreEqual(settings.AutoStart, sut.AutoStart);
 			Assert.AreEqual(executablePath, (sut.Icon as EmbeddedIconResource).FilePath);
-			Assert.AreEqual(settings.Id, settings.Id);
+			Assert.AreEqual(settings.Id, sut.Id);
 			Assert.AreEqual(settings.DisplayName, sut.Name);
 			Assert.AreEqual(settings.Description ?? settings.DisplayName, sut.Tooltip);
 		}
