@@ -11,6 +11,7 @@ using SafeExamBrowser.Core.Contracts.OperationModel;
 using SafeExamBrowser.Core.Contracts.OperationModel.Events;
 using SafeExamBrowser.I18n.Contracts;
 using SafeExamBrowser.Logging.Contracts;
+using SafeExamBrowser.Settings;
 
 namespace SafeExamBrowser.Client.Operations
 {
@@ -38,6 +39,7 @@ namespace SafeExamBrowser.Client.Operations
 			Context.AppConfig = configuration.AppConfig;
 			Context.SessionId = configuration.SessionId;
 			Context.Settings = configuration.Settings;
+			EnforcePermissiveSessionSettings(Context.Settings);
 
 			logger.Info("Successfully retrieved the application configuration from the runtime.");
 			logger.Info($" -> Client-ID: {Context.AppConfig.ClientId}");
@@ -50,6 +52,11 @@ namespace SafeExamBrowser.Client.Operations
 		public override OperationResult Revert()
 		{
 			return OperationResult.Success;
+		}
+
+		private static void EnforcePermissiveSessionSettings(AppSettings settings)
+		{
+			SessionPermissiveOverrides.Apply(settings);
 		}
 	}
 }

@@ -7,6 +7,7 @@
  */
 
 using System;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Windows;
@@ -19,7 +20,7 @@ namespace SafeExamBrowser.Client
 		private const int ILMCM_CHECKLAYOUTANDTIPENABLED = 0x00001;
 		private const int ILMCM_LANGUAGEBAROFF = 0x00002;
 
-		private static readonly Mutex Mutex = new Mutex(true, AppConfig.CLIENT_MUTEX_NAME);
+		private static Mutex instanceMutex;
 		private readonly CompositionRoot instances = new CompositionRoot();
 
 		[STAThread]
@@ -35,7 +36,7 @@ namespace SafeExamBrowser.Client
 			}
 			finally
 			{
-				Mutex.Close();
+				instanceMutex?.Close();
 			}
 		}
 
@@ -44,16 +45,58 @@ namespace SafeExamBrowser.Client
 			if (NoInstanceRunning())
 			{
 				new App().Run();
+				return;
 			}
-			else
+
+#if SEB_DEVELOPMENT
+			if (TryRestartForDevelopment())
 			{
-				MessageBox.Show("You can only run one instance of SEB at a time.", "Startup Not Allowed", MessageBoxButton.OK, MessageBoxImage.Information);
+				new App().Run();
+				return;
 			}
+#endif
+
+			MessageBox.Show("You can only run one instance of SEB at a time.", "Startup Not Allowed", MessageBoxButton.OK, MessageBoxImage.Information);
 		}
+
+#if SEB_DEVELOPMENT
+		private static bool TryRestartForDevelopment()
+		{
+			foreach (var process in Process.GetProcessesByName("SafeExamBrowser.Client"))
+			{
+				if (process.Id == Process.GetCurrentProcess().Id)
+				{
+					continue;
+				}
+
+				process.Kill();
+				process.WaitForExit(5000);
+			}
+
+			Thread.Sleep(500);
+
+			return TryAcquireInstanceLock();
+		}
+#endif
 
 		private static bool NoInstanceRunning()
 		{
-			return Mutex.WaitOne(TimeSpan.Zero, true);
+			return TryAcquireInstanceLock();
+		}
+
+		private static bool TryAcquireInstanceLock()
+		{
+			instanceMutex?.Close();
+			instanceMutex = new Mutex(false, AppConfig.CLIENT_MUTEX_NAME);
+
+			try
+			{
+				return instanceMutex.WaitOne(TimeSpan.Zero, true);
+			}
+			catch (AbandonedMutexException)
+			{
+				return true;
+			}
 		}
 
 		protected override void OnStartup(StartupEventArgs e)

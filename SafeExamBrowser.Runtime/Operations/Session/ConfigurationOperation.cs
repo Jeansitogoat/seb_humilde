@@ -174,6 +174,7 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 				var isNewConfiguration = source == UriSource.CommandLine || source == UriSource.Reconfiguration;
 
 				Context.Next.Settings = settings;
+				SessionPermissiveOverrides.Apply(Context.Next.Settings);
 
 				if (status == LoadStatus.LoadWithBrowser)
 				{

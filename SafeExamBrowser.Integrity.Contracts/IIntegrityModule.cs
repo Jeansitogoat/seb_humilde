@@ -24,6 +24,11 @@ namespace SafeExamBrowser.Integrity.Contracts
 		void ClearSession(string configurationKey);
 
 		/// <summary>
+		/// Clears the entire session integrity cache.
+		/// </summary>
+		void ResetSessionCache();
+
+		/// <summary>
 		/// Indicates whether the current user session is a remote session.
 		/// </summary>
 		bool IsRemoteSession();

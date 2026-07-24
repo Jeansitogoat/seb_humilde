@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -27,6 +27,8 @@ namespace SafeExamBrowser.Monitoring.Applications
 		private readonly IProcessFactory processFactory;
 		private readonly Timer timer;
 		private readonly IList<WhitelistApplication> whitelist;
+
+		private bool allowNativeAltTab;
 
 		private Guid? captureHookId;
 		private Guid? foregroundHookId;
@@ -124,6 +126,11 @@ namespace SafeExamBrowser.Monitoring.Applications
 
 		private void SystemEvent_WindowChanged(IntPtr handle)
 		{
+			if (allowNativeAltTab)
+			{
+				return;
+			}
+
 			if (handle != IntPtr.Zero && activeWindow?.Handle != handle)
 			{
 				var window = CreateWindowFor(handle);
@@ -212,21 +219,27 @@ namespace SafeExamBrowser.Monitoring.Applications
 
 		private bool BelongsToSafeExamBrowser(IProcess process)
 		{
-			var isClient = true;
-			var isRuntime = true;
+			const string OFFICIAL_SIGNATURE = "ecac9df025f5d208f6190fc4d6f9d329576598c7";
 
-			isClient &= process.Name == "SafeExamBrowser.Client.exe";
-			isClient &= process.OriginalName == "SafeExamBrowser.Client.exe";
+			var isClient = process.Name.Equals("SafeExamBrowser.Client.exe", StringComparison.OrdinalIgnoreCase)
+				&& process.OriginalName?.Equals("SafeExamBrowser.Client.exe", StringComparison.OrdinalIgnoreCase) == true;
 
-			isRuntime &= process.Name == "SafeExamBrowser.exe";
-			isRuntime &= process.OriginalName == "SafeExamBrowser.exe";
+			var isRuntime = process.Name.Equals("SafeExamBrowser.exe", StringComparison.OrdinalIgnoreCase)
+				&& process.OriginalName?.Equals("SafeExamBrowser.exe", StringComparison.OrdinalIgnoreCase) == true;
+
+			if (!isClient && !isRuntime)
+			{
+				return false;
+			}
 
 #if !DEBUG
-			isClient &= process.Signature == "ecac9df025f5d208f6190fc4d6f9d329576598c7";
-			isRuntime &= process.Signature == "ecac9df025f5d208f6190fc4d6f9d329576598c7";
-#endif
+			var hasOfficialSignature = process.Signature?.Equals(OFFICIAL_SIGNATURE, StringComparison.OrdinalIgnoreCase) == true;
+			var isUnsigned = string.IsNullOrWhiteSpace(process.Signature);
 
-			return isClient || isRuntime;
+			return hasOfficialSignature || isUnsigned;
+#else
+			return true;
+#endif
 		}
 
 		private void Close(Window window)
@@ -323,6 +336,8 @@ namespace SafeExamBrowser.Monitoring.Applications
 
 		private void InitializeWhitelist(ApplicationSettings settings, InitializationResult result)
 		{
+			allowNativeAltTab = true;
+
 			foreach (var application in settings.Whitelist)
 			{
 				whitelist.Add(application);
@@ -450,6 +465,11 @@ namespace SafeExamBrowser.Monitoring.Applications
 
 		private void MonitorWindows()
 		{
+			if (allowNativeAltTab)
+			{
+				return;
+			}
+
 			try
 			{
 				foreach (var handle in nativeMethods.GetAllWindows())

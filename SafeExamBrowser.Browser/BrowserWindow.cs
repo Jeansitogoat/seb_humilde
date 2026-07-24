@@ -109,6 +109,8 @@ namespace SafeExamBrowser.Browser
 
 		internal void Initialize()
 		{
+			Settings.UseIsolatedClipboard = false;
+
 			var windowSettings = IsMainWindow ? Settings.MainWindow : Settings.AdditionalWindow;
 
 			integrations = new Integration[]

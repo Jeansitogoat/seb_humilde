@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -125,11 +125,12 @@ namespace SafeExamBrowser.Client.Operations
 					actionCenterActivator.Start();
 				}
 
-				if (Context.Settings.Keyboard.AllowAltTab && activator is ITaskviewActivator taskViewActivator)
-				{
-					taskview.Register(taskViewActivator);
-					taskViewActivator.Start();
-				}
+				// Disabled: use native Windows Alt+Tab instead of SEB's custom task switcher.
+				// if (Context.Settings.Keyboard.AllowAltTab && activator is ITaskviewActivator taskViewActivator)
+				// {
+				// 	taskview.Register(taskViewActivator);
+				// 	taskViewActivator.Start();
+				// }
 
 				if (Context.Settings.Security.AllowTermination && activator is ITerminationActivator terminationActivator)
 				{

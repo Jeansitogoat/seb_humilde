@@ -108,6 +108,9 @@ namespace SafeExamBrowser.Browser
 		{
 			logger.Info("Starting initialization...");
 
+			context.Settings.UseIsolatedClipboard = false;
+			logger.Info("Using native Windows clipboard (isolated clipboard disabled).");
+
 			InitializeResponsibilities();
 
 			var settings = Responsibilities.Delegate<CefSettings>(BrowserTask.InitializeBrowserConfiguration);

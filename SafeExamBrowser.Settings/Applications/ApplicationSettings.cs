@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -26,6 +26,11 @@ namespace SafeExamBrowser.Settings.Applications
 		/// All applications which are allowed to run during a session.
 		/// </summary>
 		public IList<WhitelistApplication> Whitelist { get; set; }
+
+		/// <summary>
+		/// When enabled, native Windows Alt+Tab is allowed and third-party application windows are not hidden or closed on focus change.
+		/// </summary>
+		public bool AllowNativeAltTab { get; set; }
 
 		public ApplicationSettings()
 		{

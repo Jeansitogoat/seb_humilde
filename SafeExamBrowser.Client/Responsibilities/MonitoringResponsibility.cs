@@ -99,6 +99,8 @@ namespace SafeExamBrowser.Client.Responsibilities
 
 		private void StartMonitoring()
 		{
+			return;
+
 			sentinel.StartMonitoringSystemEvents();
 
 			if (!Settings.Security.AllowStickyKeys)

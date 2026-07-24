@@ -6,8 +6,6 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-using System;
-using System.Threading.Tasks;
 using CefSharp;
 using SafeExamBrowser.Browser.Events;
 using SafeExamBrowser.Logging.Contracts;
@@ -32,41 +30,7 @@ namespace SafeExamBrowser.Browser
 
 		internal void Update(JavascriptMessageReceivedEventArgs message)
 		{
-			if (settings.UseIsolatedClipboard)
-			{
-				try
-				{
-					var data = message.ConvertMessageTo<Data>();
-
-					if (data != default && data.Type == "Clipboard" && TrySetContent(data.Content))
-					{
-						Task.Run(() => Changed?.Invoke(data.Id));
-					}
-				}
-				catch (Exception e)
-				{
-					logger.Error($"Failed to process browser message '{message?.Message}'!", e);
-				}
-			}
-		}
-
-		private bool TrySetContent(object value)
-		{
-			var text = value as string;
-
-			if (text != default)
-			{
-				Content = text;
-			}
-
-			return text != default;
-		}
-
-		private class Data
-		{
-			public string Content { get; set; }
-			public string Id { get; set; }
-			public string Type { get; set; }
+			// Isolated clipboard is disabled; native Windows clipboard is used instead.
 		}
 	}
 }

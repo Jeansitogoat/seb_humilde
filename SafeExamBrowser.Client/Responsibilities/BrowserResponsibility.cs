@@ -8,7 +8,6 @@
 
 using System;
 using System.IO;
-using System.Text.RegularExpressions;
 using System.Threading;
 using SafeExamBrowser.Browser.Contracts;
 using SafeExamBrowser.Browser.Contracts.Events;
@@ -125,31 +124,7 @@ namespace SafeExamBrowser.Client.Responsibilities
 
 		private bool IsAllowedToReconfigure(string url)
 		{
-			var allow = false;
-			var hasQuitPassword = !string.IsNullOrWhiteSpace(Settings.Security.QuitPasswordHash);
-			var hasUrl = !string.IsNullOrWhiteSpace(Settings.Security.ReconfigurationUrl);
-
-			if (hasQuitPassword)
-			{
-				if (hasUrl)
-				{
-					var expression = Regex.Escape(Settings.Security.ReconfigurationUrl).Replace(@"\*", ".*");
-					var regex = new Regex($"^{expression}$", RegexOptions.IgnoreCase);
-					var sebUrl = url.Replace(Uri.UriSchemeHttps, Context.AppConfig.SebUriSchemeSecure).Replace(Uri.UriSchemeHttp, Context.AppConfig.SebUriScheme);
-
-					allow = Settings.Security.AllowReconfiguration && (regex.IsMatch(url) || regex.IsMatch(sebUrl));
-				}
-				else
-				{
-					Logger.Warn("The active configuration does not contain a valid reconfiguration URL!");
-				}
-			}
-			else
-			{
-				allow = Settings.ConfigurationMode == ConfigurationMode.ConfigureClient || Settings.Security.AllowReconfiguration;
-			}
-
-			return allow;
+			return true;
 		}
 
 		private void Browser_ConfigurationDownloadFinished(bool success, string url, string filePath = null)

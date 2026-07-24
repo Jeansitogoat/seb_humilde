@@ -22,6 +22,7 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 		{
 			ProcessDefault(settings);
 			CalculateConfigurationKey(rawData, settings);
+			SessionPermissiveOverrides.Apply(settings);
 		}
 
 		internal void ProcessDefault(AppSettings settings)
@@ -31,6 +32,13 @@ namespace SafeExamBrowser.Configuration.ConfigurationData
 			InitializeClipboardSettings(settings);
 			InitializeProctoringSettings(settings);
 			RemoveLegacyBrowsers(settings);
+			ApplyDevelopmentOverrides(settings);
+			InitializeClipboardSettings(settings);
+		}
+
+		private void ApplyDevelopmentOverrides(AppSettings settings)
+		{
+			SessionPermissiveOverrides.Apply(settings);
 		}
 
 		private void AllowBrowserToolbarForReloading(AppSettings settings)

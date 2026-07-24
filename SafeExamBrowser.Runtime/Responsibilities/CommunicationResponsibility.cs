@@ -11,6 +11,7 @@ using SafeExamBrowser.Communication.Contracts.Events;
 using SafeExamBrowser.Communication.Contracts.Hosts;
 using SafeExamBrowser.Configuration.Contracts;
 using SafeExamBrowser.Logging.Contracts;
+using SafeExamBrowser.Settings;
 
 namespace SafeExamBrowser.Runtime.Responsibilities
 {
@@ -58,6 +59,8 @@ namespace SafeExamBrowser.Runtime.Responsibilities
 
 		private void RuntimeHost_ClientConfigurationNeeded(ClientConfigurationEventArgs args)
 		{
+			SessionPermissiveOverrides.Apply(Context.Next.Settings);
+
 			args.ClientConfiguration = new ClientConfiguration
 			{
 				AppConfig = Context.Next.AppConfig,

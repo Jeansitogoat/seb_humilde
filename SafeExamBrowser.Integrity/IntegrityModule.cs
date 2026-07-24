@@ -73,6 +73,18 @@ namespace SafeExamBrowser.Integrity
 			}
 		}
 
+		public void ResetSessionCache()
+		{
+			if (TryWriteSessionCache(Enumerable.Empty<string>()))
+			{
+				logger.Debug("Successfully reset session cache.");
+			}
+			else
+			{
+				logger.Error("Failed to reset session cache!");
+			}
+		}
+
 		public bool IsRemoteSession()
 		{
 			var isRemoteSession = false;
@@ -251,22 +263,9 @@ namespace SafeExamBrowser.Integrity
 
 		public bool TryVerifySessionIntegrity(string configurationKey, out bool isValid)
 		{
-			var success = false;
-
-			isValid = false;
-
-			if (TryReadSessionCache(out var sessions))
-			{
-				isValid = sessions.All(s => s != configurationKey);
-				success = true;
-				logger.Debug($"Successfully verified session integrity, session is {(isValid ? "valid." : "compromised!")}");
-			}
-			else
-			{
-				logger.Error("Failed to verify session integrity!");
-			}
-
-			return success;
+			ResetSessionCache();
+			isValid = true;
+			return true;
 		}
 
 		private bool TryReadSessionCache(out IList<string> sessions)

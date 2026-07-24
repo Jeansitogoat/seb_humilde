@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  *
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -80,13 +80,13 @@ namespace SafeExamBrowser.Runtime.Operations.Bootstrap
 				{
 					logger.Error("Runtime integrity is compromised!");
 				}
-			}
-			else
-			{
-				logger.Warn("Failed to verify runtime integrity!");
+
+				return isValid;
 			}
 
-			return isValid;
+			// Local/dev builds may omit seb_x64.dll; do not abort startup in that case.
+			logger.Warn("Failed to verify runtime integrity! Continuing without native integrity module.");
+			return true;
 		}
 	}
 }

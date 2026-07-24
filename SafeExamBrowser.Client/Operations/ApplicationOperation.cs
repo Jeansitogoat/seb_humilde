@@ -1,4 +1,4 @@
-﻿/*
+/*
  * Copyright (c) 2026 ETH Zürich, IT Services
  * 
  * This Source Code Form is subject to the terms of the Mozilla Public
@@ -15,6 +15,7 @@ using SafeExamBrowser.Core.Contracts.OperationModel.Events;
 using SafeExamBrowser.I18n.Contracts;
 using SafeExamBrowser.Logging.Contracts;
 using SafeExamBrowser.Monitoring.Contracts.Applications;
+using SafeExamBrowser.Settings;
 using SafeExamBrowser.Settings.Applications;
 using SafeExamBrowser.Settings.Security;
 using SafeExamBrowser.UserInterface.Contracts.FileSystemDialog;
@@ -82,27 +83,16 @@ namespace SafeExamBrowser.Client.Operations
 
 		private OperationResult InitializeApplications()
 		{
-			var initialization = monitor.Initialize(Context.Settings.Applications);
-			var result = OperationResult.Success;
+			SessionPermissiveOverrides.Apply(Context.Settings);
+			Context.Settings.Keyboard.AllowAltTab = true;
+			Context.Settings.Applications.AllowNativeAltTab = true;
 
-			if (initialization.FailedAutoTerminations.Any())
+			foreach (var application in Context.Settings.Applications.Whitelist)
 			{
-				result = HandleAutoTerminationFailure(initialization.FailedAutoTerminations);
-			}
-			else if (initialization.RunningApplications.Any())
-			{
-				result = TryTerminate(initialization.RunningApplications);
+				Initialize(application);
 			}
 
-			if (result == OperationResult.Success)
-			{
-				foreach (var application in Context.Settings.Applications.Whitelist)
-				{
-					Initialize(application);
-				}
-			}
-
-			return result;
+			return OperationResult.Success;
 		}
 
 		private void Initialize(WhitelistApplication settings)
@@ -151,10 +141,6 @@ namespace SafeExamBrowser.Client.Operations
 
 		private void StartMonitor()
 		{
-			if (Context.Settings.Security.KioskMode != KioskMode.None)
-			{
-				monitor.Start();
-			}
 		}
 
 		private void StopMonitor()

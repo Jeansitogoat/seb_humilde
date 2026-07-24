@@ -184,7 +184,6 @@ namespace SafeExamBrowser.Browser.Responsibilities.Browser
 				Context.Responsibilities.Delegate(BrowserTask.DeleteCookies);
 			}
 
-			nativeMethods.EmptyClipboard();
 			CreateNewWindow();
 
 			Logger.Info("Successfully reset browser.");

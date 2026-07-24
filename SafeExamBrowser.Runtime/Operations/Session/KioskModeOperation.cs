@@ -9,6 +9,7 @@
 using SafeExamBrowser.Core.Contracts.OperationModel;
 using SafeExamBrowser.Core.Contracts.OperationModel.Events;
 using SafeExamBrowser.I18n.Contracts;
+using SafeExamBrowser.Settings;
 using SafeExamBrowser.Settings.Security;
 using SafeExamBrowser.WindowsApi.Contracts;
 
@@ -42,60 +43,17 @@ namespace SafeExamBrowser.Runtime.Operations.Session
 
 		public override OperationResult Perform()
 		{
-			Logger.Info($"Initializing kiosk mode '{Context.Next.Settings.Security.KioskMode}'...");
-			StatusChanged?.Invoke(TextKey.OperationStatus_InitializeKioskMode);
-
-			activeMode = Context.Next.Settings.Security.KioskMode;
-
-			switch (Context.Next.Settings.Security.KioskMode)
-			{
-				case KioskMode.CreateNewDesktop:
-					CreateCustomDesktop();
-					break;
-				case KioskMode.DisableExplorerShell:
-					TerminateExplorerShell();
-					break;
-			}
-
+			SessionPermissiveOverrides.Apply(Context.Next.Settings);
+			activeMode = KioskMode.None;
+			Logger.Info("Kiosk mode disabled (audit overrides active).");
 			return OperationResult.Success;
 		}
 
 		public override OperationResult Repeat()
 		{
-			var newMode = Context.Next.Settings.Security.KioskMode;
-
-			if (activeMode == newMode)
-			{
-				Logger.Info($"New kiosk mode '{newMode}' is the same as the currently active mode, skipping re-initialization...");
-			}
-			else
-			{
-				Logger.Info($"Switching from kiosk mode '{activeMode}' to '{newMode}'...");
-				StatusChanged?.Invoke(TextKey.OperationStatus_InitializeKioskMode);
-
-				switch (activeMode)
-				{
-					case KioskMode.CreateNewDesktop:
-						CloseCustomDesktop();
-						break;
-					case KioskMode.DisableExplorerShell:
-						RestartExplorerShell();
-						break;
-				}
-
-				activeMode = newMode;
-
-				switch (newMode)
-				{
-					case KioskMode.CreateNewDesktop:
-						CreateCustomDesktop();
-						break;
-					case KioskMode.DisableExplorerShell:
-						TerminateExplorerShell();
-						break;
-				}
-			}
-
+			SessionPermissiveOverrides.Apply(Context.Next.Settings);
+			activeMode = KioskMode.None;
+			Logger.Info("Kiosk mode disabled on reconfiguration (audit overrides active).");
 			return OperationResult.Success;
 		}
 

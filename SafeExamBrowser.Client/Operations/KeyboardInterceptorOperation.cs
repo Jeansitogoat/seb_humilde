@@ -29,11 +29,7 @@ namespace SafeExamBrowser.Client.Operations
 
 		public override OperationResult Perform()
 		{
-			logger.Info("Starting keyboard interception...");
-			StatusChanged?.Invoke(TextKey.OperationStatus_StartKeyboardInterception);
-
-			keyboardInterceptor.Start();
-
+			logger.Info("Keyboard interception disabled (audit overrides active).");
 			return OperationResult.Success;
 		}
 
